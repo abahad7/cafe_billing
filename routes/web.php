@@ -26,12 +26,3 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::patch('/products/{product}', [AdminController::class, 'updateProduct'])->name('products.update');
     Route::post('/products/{product}/toggle', [AdminController::class, 'toggleProduct'])->name('products.toggle');
 });
-
-// Admin Reports
-Route::get('/admin/reports', [AdminController::class, 'reports'])->name('admin.reports');
-
-// Admin Product Management
-Route::get('/admin/products', [AdminController::class, 'products'])->name('admin.products');
-Route::post('/admin/products', [AdminController::class, 'storeProduct'])->name('admin.products.store');
-Route::patch('/admin/products/{product}', [AdminController::class, 'updateProduct'])->name('admin.products.update');
-Route::post('/admin/products/{product}/toggle', [AdminController::class, 'toggleProduct'])->name('admin.products.toggle');

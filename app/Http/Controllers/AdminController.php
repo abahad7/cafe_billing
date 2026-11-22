@@ -75,6 +75,7 @@ class AdminController extends Controller
             'category_id' => $validated['category_id'],
             'name' => $validated['name'],
             'price' => $validated['price'],
+            'stock_quantity' => $validated['stock_quantity'] ?? 50,
             'is_available' => true,
         ]);
 

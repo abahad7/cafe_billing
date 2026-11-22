@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Menu - Fresh Cafe</title>
+    <title>Manage Menu - Madras Waffle House</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen">
@@ -11,14 +11,29 @@
     <!-- Top Bar -->
     <header class="bg-emerald-600 text-white px-6 py-4 flex justify-between items-center shadow-md">
         <h1 class="text-xl font-bold">⚙️ Menu & Product Management</h1>
-        <div class="flex gap-2">
+        <div class="flex items-center gap-2.5">
             @auth
-            <a href="{{ route('pos.index') }}" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 rounded-lg text-sm font-semibold transition">
-                ← Back to Billing
-            </a>
-            <a href="{{ route('admin.reports') }}" class="px-4 py-2 bg-white text-emerald-800 hover:bg-gray-100 rounded-lg text-sm font-semibold transition">
+                <span class="text-xs bg-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-500">
+                    Logged in as: <strong>{{ auth()->user()->name }}</strong>
+                </span>
+            @endauth
+
+            <a href="{{ route('admin.reports') }}" class="px-3.5 py-1.5 bg-white text-emerald-800 hover:bg-gray-100 rounded-lg text-xs font-bold transition shadow-sm">
                 📊 Sales Reports
             </a>
+
+            <a href="{{ route('pos.index') }}" class="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 rounded-lg text-xs font-bold transition">
+                ← Billing Counter
+            </a>
+
+            @auth
+            <form action="{{ route('logout') }}" method="POST" class="inline">
+                @csrf
+                <button type="submit" class="px-3.5 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-bold transition">
+                    Logout
+                </button>
+            </form>
+            @endauth
         </div>
     </header>
 
@@ -33,7 +48,7 @@
         <!-- Add New Product Form -->
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h2 class="text-lg font-bold text-gray-800 mb-4">+ Add New Menu Item</h2>
-            <form action="{{ route('admin.products.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <form action="{{ route('admin.products.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                 @csrf
                 <div>
                     <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Category</label>
@@ -45,11 +60,11 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Item Name</label>
-                    <input type="text" name="name" placeholder="e.g. Avocado Shake" required class="w-full border rounded-lg px-3 py-2 text-sm">
+                    <input type="text" name="name" placeholder="e.g. Nutella Waffle" required class="w-full border rounded-lg px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Price (₹)</label>
-                    <input type="number" step="0.5" name="price" placeholder="e.g. 90" required class="w-full border rounded-lg px-3 py-2 text-sm">
+                    <input type="number" step="0.5" name="price" placeholder="e.g. 140" required class="w-full border rounded-lg px-3 py-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Starting Stock</label>
@@ -86,9 +101,9 @@
                             <td class="p-4 font-semibold text-gray-800">{{ $product->name }}</td>
                             <td class="p-4 text-gray-500">{{ $cat->name }}</td>
                             <td class="p-4 font-bold text-emerald-600">₹{{ number_format($product->price, 2) }}</td>
-                             <td class="p-4 font-bold {{ $product->stock_quantity <= 5 ? 'text-red-600' : 'text-gray-700' }}">
-                                    {{ $product->stock_quantity }} units
-                                </td>
+                            <td class="p-4 font-bold {{ $product->stock_quantity <= 5 ? 'text-red-600' : 'text-gray-700' }}">
+                                {{ $product->stock_quantity }} units
+                            </td>
                             <td class="p-4">
                                 @if($product->is_available)
                                     <span class="px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">In Stock</span>
@@ -110,7 +125,6 @@
                     @endforeach
                 </tbody>
             </table>
-                @endauth
         </div>
 
     </main>
