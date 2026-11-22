@@ -4,22 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>MWH Cafe POS Billing</title>
+    <title>Madras Waffle House - Billing</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-100 h-screen overflow-hidden flex flex-col font-sans" x-data="posApp()">
 
-    <!-- Top Bar -->
-    <header class="bg-emerald-600 text-white px-6 py-3 flex justify-between items-center shadow-md">
-        <h1 class="text-xl font-bold flex items-center gap-2">
-            <img src="{{ asset('images/logo.png') }}" 
-             alt="Cafe Logo" 
-             class="h-10 w-auto object-contain">
-             <h1 class="text-skyblue px-6 py-3 flex justify-between items-center font-bold text-lg">Madras Waffle House</h1>
-        </h1>
-        <div class="text-sm font-medium" x-text="new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })"></div>
+    <!-- Top Bar with Centered "Madras Waffle House" & No Timestamp -->
+    <header class="bg-emerald-600 text-white px-6 py-3 relative flex items-center justify-between shadow-md">
+        
+        <!-- Left: Logo -->
+        <div class="flex items-center gap-3">
+            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10 w-auto object-contain" onerror="this.style.display='none'">
+        </div>
+
+        <!-- Center: Madras Waffle House -->
+        <div class="absolute left-1/2 transform -translate-x-1/2 text-center pointer-events-none">
+            <h1 class="text-2xl font-black tracking-wider uppercase flex items-center gap-2 drop-shadow-sm">
+                Madras Waffle House
+            </h1>
+        </div>
+
+        <!-- Right: Admin Navigation Links -->
+        <div class="flex items-center gap-2">
+            <a href="{{ route('admin.reports') }}" class="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 rounded-lg text-xs font-bold transition shadow-sm">
+                📊 Sales Report
+            </a>
+           
+        </div>
     </header>
+
+    <!-- Success Toast Notification -->
+    <div x-show="showSuccessNotification" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 -translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 -translate-y-2"
+         class="fixed top-16 right-6 z-50 bg-emerald-700 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-emerald-400">
+        <span class="text-2xl">✅</span>
+        <div>
+            <p class="font-bold text-sm">Bill Completed & Saved!</p>
+            <p class="text-xs text-emerald-100">Ready for next customer.</p>
+        </div>
+    </div>
 
     <!-- Main Workspace -->
     <div class="flex-1 flex overflow-hidden">
@@ -54,9 +83,11 @@
                             class="bg-white border-2 border-gray-100 hover:border-emerald-500 rounded-xl p-4 cursor-pointer shadow-sm hover:shadow-md transition flex flex-col justify-between h-28">
                             <h3 class="font-semibold text-gray-800 text-base leading-tight">{{ $product->name }}</h3>
                             <div class="flex justify-between items-center mt-2">
-                                <span class="text-xs text-gray-400 uppercase tracking-wider">{{ $category->name }}</span>
-                                <span class="font-bold text-emerald-600 text-lg">₹{{ number_format($product->price, 2) }}</span>
-                            </div>
+    <span class="text-xs text-gray-400 uppercase tracking-wider">
+        {{ $product->stock_quantity }} left
+    </span>
+    <span class="font-bold text-emerald-600 text-lg">₹{{ number_format($product->price, 2) }}</span>
+</div>
                         </div>
                     @endforeach
                 @endforeach
@@ -68,7 +99,7 @@
             <!-- Cart Header -->
             <div class="p-4 border-b bg-white flex justify-between items-center shadow-sm">
                 <h2 class="font-bold text-gray-800 text-lg">Current Bill</h2>
-                <button @click="cart = []" x-show="cart.length > 0" class="text-xs text-red-500 hover:underline">Clear All</button>
+                <button @click="resetCart()" x-show="cart.length > 0" class="text-xs text-red-500 hover:underline font-semibold">Clear All</button>
             </div>
 
             <!-- Cart Items List -->
@@ -76,7 +107,7 @@
                 <template x-if="cart.length === 0">
                     <div class="text-center text-gray-400 mt-16">
                         <p class="text-4xl mb-2">🛒</p>
-                        <p>No items in current bill</p>
+                        <p class="font-medium">No items in current bill</p>
                         <p class="text-xs">Click items on the left to add</p>
                     </div>
                 </template>
@@ -111,6 +142,12 @@
                     <span>Total Amount:</span>
                     <span class="text-emerald-600" x-text="'₹' + total().toFixed(2)"></span>
                 </div>
+                <!-- Customer Phone (Optional) -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Customer Mobile (Optional)</label>
+                    <input type="tel" x-model="customerPhone" placeholder="e.g. 9876543210" 
+                        class="w-full border rounded-lg px-3 py-1.5 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                </div>
 
                 <!-- Payment Methods -->
                 <div class="grid grid-cols-3 gap-2 pt-2">
@@ -125,7 +162,7 @@
                     :disabled="cart.length === 0 || isSubmitting"
                     class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl shadow-md transition text-base">
                     <span x-show="!isSubmitting">Print & Complete Bill (₹<span x-text="total().toFixed(2)"></span>)</span>
-                    <span x-show="isSubmitting">Processing...</span>
+                    <span x-show="isSubmitting">Saving & Printing...</span>
                 </button>
             </div>
         </div>
@@ -137,8 +174,10 @@
                 activeCategory: 'all',
                 cart: [],
                 discount: 0,
+                customerPhone: '',
                 paymentMethod: 'cash',
                 isSubmitting: false,
+                showSuccessNotification: false,
 
                 addToCart(productId, name, price) {
                     const existing = this.cart.find(item => item.product_id === productId);
@@ -164,6 +203,12 @@
                 total() {
                     return Math.max(0, this.subtotal() - (this.discount || 0));
                 },
+                 resetCart() {
+                    this.cart = [];
+                    this.discount = 0;
+                    this.customerPhone = ''; // <--- reset
+                    this.paymentMethod = 'cash';
+        },
                 async submitOrder() {
                     if (this.cart.length === 0) return;
                     this.isSubmitting = true;
@@ -179,15 +224,27 @@
                             body: JSON.stringify({
                                 items: this.cart,
                                 payment_method: this.paymentMethod,
-                                discount: this.discount
+                                discount: this.discount,
+                                 customer_phone: this.customerPhone
                             })
                         });
 
                         const data = await response.json();
                         if (data.success) {
-                            window.location.href = data.redirect;
+                            // 1. Open receipt in print popup
+                            window.open(data.redirect, '_blank', 'width=420,height=600');
+
+                            // 2. Instantly reset the current bill for next customer
+                            this.resetCart();
+
+                            // 3. Show success toast notification
+                            this.showSuccessNotification = true;
+                            setTimeout(() => {
+                                this.showSuccessNotification = false;
+                            }, 3500);
                         } else {
-                            alert("Order failed. Please try again.");
+                            const errorMsg = data.message || (data.errors ? Object.values(data.errors).flat().join("\n") : "Order failed. Please try again.");
+                            alert(errorMsg);
                         }
                     } catch (e) {
                         alert("Network error: " + e.message);

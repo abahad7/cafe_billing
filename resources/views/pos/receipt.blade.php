@@ -4,35 +4,44 @@
     <meta charset="UTF-8">
     <title>Receipt #{{ $order->order_number }}</title>
     <style>
+     @page {
+            margin: 0;
+            size: 80mm auto;
+        }
         body {
             font-family: 'Courier New', Courier, monospace;
             width: 300px;
             margin: 0 auto;
             padding: 10px;
             color: #000;
+             font-size: 12px;
+            line-height: 1.3;
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .bold { font-weight: bold; }
-        .line { border-top: 1px dashed #000; margin: 8px 0; }
-        table { width: 100%; font-size: 13px; }
-        th { text-align: left; }
-        .btn-box { margin-top: 20px; text-align: center; }
+        .dashed { border-top: 1px dashed #000; margin: 6px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { text-align: left; padding-bottom: 4px; }
+        td { padding: 2px 0; }
         @media print {
-            .btn-box { display: none; }
+            .no-print { display: none; }
         }
     </style>
 </head>
 <body onload="window.print()">
 
-    <div class="text-center">
-        <h2 style="margin:0;">Madras Waffle House</h2>
-        <p style="margin:4px 0; font-size:12px;">Fresh Juices, Waffles & Snacks</p>
-        <p style="margin:0; font-size:11px;">{{ $order->created_at->format('d M Y, h:i A') }}</p>
-        <p style="margin:2px 0; font-size:12px;" class="bold">Receipt: {{ $order->order_number }}</p>
+  <div class="text-center">
+        <h2 style="margin: 0; font-size: 16px; letter-spacing: 1px;">MADRAS WAFFLE HOUSE</h2>
+        <p style="margin: 2px 0; font-size: 11px;">Fresh Waffles, Juices & Snacks</p>
+        <p style="margin: 1px 0; font-size: 11px;">{{ $order->created_at->format('d/m/Y  h:i A') }}</p>
+        <p style="margin: 2px 0; font-size: 12px;" class="bold">Bill No: {{ $order->order_number }}</p>
+        @if($order->customer_phone)
+            <p style="margin: 1px 0; font-size: 11px;">Customer Ph: <strong>{{ $order->customer_phone }}</strong></p>
+        @endif
     </div>
 
-    <div class="line"></div>
+    <div class="dashed"></div>
 
     <table>
         <thead>
@@ -45,7 +54,7 @@
         <tbody>
             @foreach($order->items as $item)
             <tr>
-                <td>{{ $item->product_name }}</td>
+                <td>{{ Str::limit($item->product_name, 18) }}</td>
                 <td class="text-center">{{ $item->quantity }}</td>
                 <td class="text-right">₹{{ number_format($item->total_price, 2) }}</td>
             </tr>
@@ -53,9 +62,9 @@
         </tbody>
     </table>
 
-    <div class="line"></div>
+    <div class="dashed"></div>
 
-    <table>
+     <table>
         <tr>
             <td>Subtotal:</td>
             <td class="text-right">₹{{ number_format($order->subtotal, 2) }}</td>
@@ -66,27 +75,32 @@
             <td class="text-right">-₹{{ number_format($order->discount, 2) }}</td>
         </tr>
         @endif
-        <tr class="bold" style="font-size:15px;">
-            <td>Grand Total:</td>
+        <tr class="bold" style="font-size: 14px;">
+            <td>TOTAL:</td>
             <td class="text-right">₹{{ number_format($order->total, 2) }}</td>
         </tr>
         <tr>
-            <td>Paid via:</td>
+            <td>Payment:</td>
             <td class="text-right">{{ strtoupper($order->payment_method) }}</td>
         </tr>
     </table>
 
-    <div class="line"></div>
+    <div class="dashed"></div>
 
-    <div class="text-center" style="font-size:12px;">
-        <p style="margin:4px 0;">Thank you! Visit again! 🍹</p>
+     <!-- Footer -->
+    <div class="text-center" style="margin-top: 6px;">
+        <p style="margin: 2px 0;">*** THANK YOU! VISIT AGAIN ***</p>
+        <p style="margin: 0; font-size: 10px;">Taste the crunch in every bite 🧇</p>
     </div>
-
-    <div class="btn-box">
-        <a href="{{ route('pos.index') }}" style="display:inline-block; padding:8px 16px; background:#10B981; color:#fff; text-decoration:none; border-radius:6px; font-weight:bold; font-family:sans-serif; font-size:13px;">
-            ← Back to Billing
-        </a>
-    </div>
-
+    <!-- Auto Print & Auto-Close Script -->
+    <script>
+        window.onload = function() {
+            window.print();
+        };
+        // Auto-close print window when user prints or cancels
+        window.onafterprint = function() {
+            window.close();
+        };
+    </script>
 </body>
 </html>
